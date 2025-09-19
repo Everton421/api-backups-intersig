@@ -28,7 +28,7 @@ import mysql2 from 'mysql2/promise'
             senha
         } = request.body
 
-               let pool: mysql2.Pool | undefined;
+            let pool: mysql2.Pool | undefined;
             let connection: mysql2.PoolConnection | undefined;
 
           pool = mysql2.createPool({

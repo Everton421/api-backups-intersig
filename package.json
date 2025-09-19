@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --env-file .env --watch --experimental-strip-types src/server.ts",
-    "bkp":"tsx --env-file .env src/services/exe-backup.ts",
+    "bkp": "tsx --env-file .env src/services/exe-backup.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +15,8 @@
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",
     "@scalar/fastify-api-reference": "^1.35.6",
+    "@types/adm-zip": "^0.5.7",
+    "adm-zip": "^0.5.16",
     "argon2": "^0.44.0",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
