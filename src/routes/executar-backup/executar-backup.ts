@@ -3,6 +3,7 @@ import z from "zod";
 import { db } from "../../database/client.ts";
 import { clientes } from "../../database/schema.ts";
 import { eq } from "drizzle-orm";
+import { execBackup  } from "../../services/exe-backup.ts";
 
 
 export const executarBackup: FastifyPluginAsyncZod = async ( server ) =>{
@@ -21,7 +22,23 @@ export const executarBackup: FastifyPluginAsyncZod = async ( server ) =>{
         const selectedClientBackup = await db.select().from(clientes).where( eq(clientes.codigo, Number(codigo) ))
                 if( selectedClientBackup.length > 0  ){
 
-                    return reply.send(selectedClientBackup);
+                    //return reply.send(selectedClientBackup);
+                     const dataClient = selectedClientBackup[0]
+
+                    const databaseName = dataClient.nomeBanco
+
+                    const arrDatabases = [ `${databaseName}_publico`,`${databaseName}_vendas`,`${databaseName}_financeiro`,`${databaseName}_estoque` ] 
+                    const config  = {
+                        host: dataClient.host,
+                        porta: String(dataClient.portaMysql),
+                        senha: dataClient.senhaMysql,
+                        usuario: dataClient.usuarioMysql
+                    }
+
+
+                  await execBackup( config, arrDatabases)
+                     
+                         
                 }
 
             }  

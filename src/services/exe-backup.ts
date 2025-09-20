@@ -2,13 +2,13 @@ import fs from 'fs'
 import { execFile , spawn} from 'child_process';
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'; // Importe para usar o import.meta.url
-import { dumpDatabase } from './dump-database';
-import { zipBackup } from './zip';
-import { limparArquivosSql } from './delete-arquivos';
-import { dateHook } from '../hooks/data-hook';
+import { dumpDatabase } from './dump-database.ts';
+import { zipBackup } from './zip.ts';
+import { limparArquivosSql } from './delete-arquivos.ts';
+import { dateHook } from '../hooks/data-hook.ts';
 
 
-    type mysqlConfig = {
+    export type mysqlConfig = {
         host:string,
         porta:string,
         usuario:string,
@@ -16,14 +16,9 @@ import { dateHook } from '../hooks/data-hook';
     }
 
 
-   const conf:mysqlConfig = {
-    host:'192.168.100.106',
-    porta:'3306',
-    senha:'Nileduz',
-    usuario:"intersig"
- } 
+ 
 
-async function  execBackup (config:mysqlConfig, databases:string[] ){
+export async function  execBackup (config:mysqlConfig, databases:string[] ){
 
         const dateService = dateHook();
         const {  data, hora} = dateService.getDataHora()
@@ -36,28 +31,33 @@ async function  execBackup (config:mysqlConfig, databases:string[] ){
     try{
          if( databases.length > 0 ){
              for( const  database  of databases ){
-            await dumpDatabase(config, database ).then(result => {
-                         console.log(result);
-                     }).catch(err => {
-                         console.error(err);
-                 });
-             }
+                
+                await dumpDatabase(config, database ).then(result => {
+                            console.log(result);
+                        }).catch(err => {
+                            console.error(err);
+                 return { erro:true, msg: `erro ao tentar  executar o dump ${err}`  }
+
+                    });
+                }
+                
          }else{
-             console.log('nenhum banco de dados disponivel para backup!')
+                 return { erro:true, msg:'nenhum banco de dados disponivel para backup!'    }
+ 
          }
 
        zipBackup(zipPath)
-    .then(() => console.log('Backup realizado com sucesso!'))
-    .catch(err => console.error('Falha ao realizar o backup:', err));
+    .then(() =>  {    return { erro:false, msg: `Backup realizado com sucesso!` }})
+    .catch(err => {    return { erro:true, msg:`erro ao tentar  executar o zip dos arquivos ${err}`   }} );
 
         limparArquivosSql()
 
     }catch(e){
-        console.log("erro ao tentar executar o backup")
+        return { erro:true, msg: ` erro ao tentar executar o backup ${e} `  }
     }
 
 
 
 }
 
-  execBackup (conf, [ 'hipertruck_teste_publico', 'hipertruck_teste_estoque'])
+   

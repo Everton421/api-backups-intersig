@@ -14,6 +14,7 @@ export const getClientes : FastifyPluginAsyncZod= async (server)=>{
               orderBy: z.enum(['codigo', 'nomeFantasia','razaoSocial']).optional().default('codigo'),
               groupBy: z.enum(['codigo', 'ip', 'host']).default('codigo'),
               page: z.coerce.number().optional().default(1),
+              host: z.string().optional(),
             }),
             /*
             response:{
@@ -99,24 +100,36 @@ export const getClientes : FastifyPluginAsyncZod= async (server)=>{
 
     }, async ( request, reply)=>{
        
-        const { orderBy, page, search, groupBy } = request.query
+        const { orderBy, page, search, groupBy, host } = request.query
         
-        const conditions:SQL[] =[]
-        
-        if( search ){
+        const conditions:SQL[] =[] 
+
+
+        if( search && !host ){
               conditions.push( like(clientes.nomeFantasia,`%${search}%` ))
-              conditions.push(like(clientes.razaoSocial, `%${search}%`))
+               conditions.push(like(clientes.razaoSocial, `%${search}%`))
               conditions.push(like(clientes.cnpj, `%${search}%`))
-             conditions.push(like(clientes.ip,`%${search}%` ) )
+              conditions.push(like(clientes.ip,`%${search}%` ) )
+              conditions.push(like(clientes.host,`%${search}%` ) )
+                     
         }
-            conditions.push( eq(clientes.ativo, 'S'))
+
+         if( host && !search){
+             conditions.push(eq(clientes.host,`${host}` ) )        
+          }
+            if( host && search  ){
+             conditions.push(eq(clientes.host,`${host}`  )   )        
+            }
+      
+
+            //conditions.push( eq(clientes.ativo, 'S'))
 
       const clients:any = await 
         db.select()
         .from(clientes)
-         .where( or(...conditions)   )
+         .where( or(...conditions) )
         .groupBy( clientes[groupBy] )
-        .orderBy( asc( clientes[orderBy])) 
+        .orderBy( asc( clientes[orderBy]))
 
 
         if( clients.length > 0 ){
